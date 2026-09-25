@@ -1,6 +1,7 @@
 const path = require('path');
 const CONFIG = require(path.join(__dirname, '../config.js'));
 const packageJson = require('../package.json');
+const { ipcRenderer } = require('electron');
 
 let ws;
 
@@ -194,6 +195,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
     let volDownBtn = document.getElementById('voldown-key-btn');
     if (volDownBtn) volDownBtn.innerText = `Vol Down: ${volDownKey}`;
+
+    syncGlobalShortcuts(); // Register shortcuts on boot
 });
 
 // --- Event Listeners & UI Controls ---
@@ -290,7 +293,7 @@ if (saveSettingsBtn && settingsModal) {
         localStorage.setItem('svrp_volume', radioState.volume);
         localStorage.setItem('svrp_volup_key', volUpKey);
         localStorage.setItem('svrp_voldown_key', volDownKey);
-        
+        syncGlobalShortcuts();
         settingsModal.classList.add('hidden');
     });
 }
@@ -373,3 +376,12 @@ window.addEventListener('keyup', (e) => {
         console.log("PTT Released: Muted.");
     }
 });
+
+// Send keybinds to main.js to register them globally
+function syncGlobalShortcuts() {
+    ipcRenderer.send('register-shortcuts', {
+        pttKey: pttKey,
+        volUpKey: volUpKey,
+        volDownKey: volDownKey
+    });
+}
