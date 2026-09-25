@@ -4,7 +4,6 @@ const CONFIG = require(path.join(__dirname, '../config.js'));
 let ws;
 
 function connectWebSocket() {
-    // Uses the URL directly from your hidden config.js file[cite: 5]
     ws = new WebSocket(CONFIG.WS_URL);
     
     ws.onopen = () => {
@@ -31,11 +30,7 @@ let radioState = {
     isTyping: false
 };
 
-let isDragging = false;
-let dragOffsetX = 0;
-let dragOffsetY = 0;
-
-// Automatically show the radio container when the desktop app launches[cite: 5]
+// Initialize elements and WebSocket on load
 window.addEventListener('DOMContentLoaded', () => {
     connectWebSocket();
     let container = document.getElementById('radio-container');
@@ -44,37 +39,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     updateDisplay();
     setupMicrophone();
-});
-
-let container = document.getElementById('radio-container');
-
-// Dragging Logic for Desktop Window[cite: 5]
-if (container) {
-    container.addEventListener('mousedown', function(e) {
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
-        
-        isDragging = true;
-        let rect = container.getBoundingClientRect();
-        dragOffsetX = e.clientX - rect.left;
-        dragOffsetY = e.clientY - rect.top;
-    });
-}
-
-document.addEventListener('mousemove', function(e) {
-    if (!isDragging) return;
-    
-    let newX = e.clientX - dragOffsetX;
-    let newY = e.clientY - dragOffsetY;
-
-    if (container) {
-        container.style.position = 'absolute';
-        container.style.left = newX + 'px';
-        container.style.top = newY + 'px';
-    }
-});
-
-document.addEventListener('mouseup', function() {
-    isDragging = false;
 });
 
 function updateDisplay() {
@@ -139,8 +103,8 @@ function submitChannel() {
     radioState.channelName = `Channel ${newChannel}`;
     updateDisplay();
 
-    // Send the channel update to your live server endpoint[cite: 5]
-    fetch(`http://82.197.65.71:3001/api/radio/update`, {
+    // Send the channel update to your live server endpoint
+    fetch(`${CONFIG.API_URL}/api/radio/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -152,7 +116,7 @@ function submitChannel() {
     });
 }
 
-// Power Knob Click -> Toggle On/Off[cite: 5]
+// Power Knob Click -> Toggle On/Off
 const powerKnob = document.getElementById('power-knob');
 if (powerKnob) {
     powerKnob.addEventListener('click', function() {
@@ -161,7 +125,7 @@ if (powerKnob) {
     });
 }
 
-// Click Screen -> Activate Direct On-Screen Typing[cite: 5]
+// Click Screen -> Activate Direct On-Screen Typing
 const radioScreen = document.getElementById('radio-screen');
 if (radioScreen) {
     radioScreen.addEventListener('click', function(e) {
@@ -185,7 +149,7 @@ if (radioScreen) {
     });
 }
 
-// Keypad Button Clicks[cite: 5]
+// Keypad Button Clicks
 document.querySelectorAll('.num-btn').forEach(button => {
     button.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -228,7 +192,7 @@ if (channelInput) {
     });
 }
 
-// Initialize microphone stream capture[cite: 5]
+// Initialize microphone stream capture
 async function setupMicrophone() {
     try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -236,11 +200,11 @@ async function setupMicrophone() {
 
         mediaRecorder.ondataavailable = (event) => {
             if (event.data.size > 0 && ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(event.data); // Send raw audio chunks to WebSocket server[cite: 5]
+                ws.send(event.data);
             }
         };
 
-        mediaRecorder.start(100); // Capture chunks every 100ms[cite: 5]
+        mediaRecorder.start(100);
         console.log("Microphone initialized for broadcasting.");
     } catch (err) {
         console.error("Microphone access denied or unavailable:", err);
