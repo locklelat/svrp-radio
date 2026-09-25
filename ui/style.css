@@ -10,24 +10,24 @@ body {
     display: none !important;
 }
 
-/* Main Radio Chassis - 20% Narrower (224px) */
 #radio-container {
-    position: absolute;
-    bottom: 30px;
-    right: 40px;
+    position: relative; /* Change from absolute to relative */
     width: 224px;
     display: flex;
     flex-direction: column;
     align-items: center;
     filter: drop-shadow(0 12px 24px rgba(0,0,0,0.65));
-    cursor: grab;
+    -webkit-app-region: drag; 
+}
+
+button, input, .radio-screen {
+    -webkit-app-region: no-drag;
 }
 
 #radio-container:active {
     cursor: grabbing;
 }
 
-/* Top Deck - Scaled narrower with extended vertical room */
 .radio-top-deck {
     width: 195px;
     height: 150px;
@@ -39,7 +39,7 @@ body {
     box-sizing: border-box;
 }
 
-/* Tactical Antenna - 15% Thicker */
+/* Tactical Antenna */
 .antenna {
     width: 30px;
     height: 280px;

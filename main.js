@@ -10,18 +10,18 @@ log.info('App starting...');
 
 function createWindow() {
     const mainWindow = new BrowserWindow({
-        width: 240,
-        height: 500,
-        frame: false,          // Removes standard Windows title bar
-        transparent: true,     // Keeps transparent background
+        width: 260,
+        height: 520,
+        frame: false,
+        transparent: true,
         resizable: false,
+        alwaysOnTop: true,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false
         }
     });
 
-    // Loads index.html from the 'ui' folder cleanly
     mainWindow.loadFile(path.join(__dirname, 'ui/index.html'));
 }
 
