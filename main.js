@@ -12,8 +12,8 @@ function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 240,
         height: 500,
-        frame: false,
-        transparent: true,
+        frame: false,          // Removes standard Windows title bar
+        transparent: true,     // Keeps transparent background
         resizable: false,
         webPreferences: {
             nodeIntegration: true,
@@ -21,6 +21,7 @@ function createWindow() {
         }
     });
 
+    // Loads index.html from the 'ui' folder
     mainWindow.loadFile(path.join(__dirname, 'ui/index.html'));
 }
 
@@ -47,33 +48,4 @@ autoUpdater.on('update-available', () => {
 autoUpdater.on('update-downloaded', () => {
     log.info('Update downloaded; will install now');
     autoUpdater.quitAndInstall();
-});
-
-function createWindow() {
-    const mainWindow = new BrowserWindow({
-        width: 240,
-        height: 500,
-        frame: false,          // Removes standard Windows title bar
-        transparent: true,     // Keeps transparent background
-        resizable: false,
-        webPreferences: {
-            nodeIntegration: true,
-            contextIsolation: false
-        }
-    });
-
-    // Loads index.html from the new 'ui' folder
-    mainWindow.loadFile(path.join(__dirname, 'ui/index.html'));
-}
-
-app.whenReady().then(() => {
-    createWindow();
-
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) createWindow();
-    });
-});
-
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit();
 });
