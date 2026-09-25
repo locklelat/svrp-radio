@@ -211,6 +211,11 @@ button, input, .radio-screen, .knob, .settings-content {
     font-weight: bold;
 }
 
+#app-version {
+    text-align: center;
+    flex: 1;
+}
+
 .inline-input-container {
     display: flex;
     align-items: center;

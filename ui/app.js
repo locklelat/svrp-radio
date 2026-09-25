@@ -1,7 +1,43 @@
 const path = require('path');
 const CONFIG = require(path.join(__dirname, '../config.js'));
+const packageJson = require('../package.json');
 
 let ws;
+
+// --- PTT & Volume State Variables (Declared First) ---
+let pttKey = localStorage.getItem('svrp_ptt_key') || "ControlLeft";
+let pttKeyLabel = localStorage.getItem('svrp_ptt_label') || "CTRL (ControlLeft)";
+let radioVolume = parseInt(localStorage.getItem('svrp_volume')) || 30;
+
+let volUpKey = localStorage.getItem('svrp_volup_key') || "NumpadAdd";
+let volDownKey = localStorage.getItem('svrp_voldown_key') || "NumpadSubtract";
+
+let isListeningForPTT = false;
+let isListeningForVolUp = false;
+let isListeningForVolDown = false;
+let isTransmitting = false;
+
+let radioState = {
+    isOn: false,
+    channel: 0,
+    channelName: "---",
+    volume: radioVolume,
+    isTyping: false
+};
+
+// --- Audio Initialization ---
+const pttStartSound = new Audio('./sounds/keydown.mp3');
+const pttEndSound = new Audio('./sounds/keyup.mp3');
+
+function playSound(audioObj) {
+    if (!radioState.isOn) return;
+    if (!audioObj) return;
+    audioObj.volume = radioState.volume / 100;
+    audioObj.currentTime = 0;
+    audioObj.play().catch(e => {
+        // Silently catch any playback restrictions
+    });
+}
 
 function connectWebSocket() {
     ws = new WebSocket(CONFIG.WS_URL);
@@ -22,24 +58,35 @@ function connectWebSocket() {
     };
 }
 
-let radioState = {
-    isOn: false,
-    channel: 0,
-    channelName: "---",
-    volume: 30,
-    isTyping: false
+function cancelTyping() {
+    radioState.isTyping = false;
+    let inputContainer = document.getElementById('inline-input-container');
+    let channelDisplay = document.getElementById('channel-display');
+    let channelInput = document.getElementById('channel-input');
+
+    if (inputContainer) inputContainer.classList.add('hidden');
+    if (channelDisplay) channelDisplay.classList.remove('hidden');
+    if (channelInput) channelInput.value = '';
+}
+
+// Channel Name Mapping (matching your server configuration)[cite: 7]
+const channelNames = {
+    1: "SASP TAC 1",
+    2: "SASP TAC 2",
+    3: "SASP TAC 3",
+    4: "SASP TAC 4",
+    5: "SASP TRAFFIC",
+    6: "SASP DRUG TASK",
+    7: "SASP PURSUIT 3",
+    8: "SASP PURSUIT 2",
+    9: "SASP PURSUIT 1",
+    10: "STATE PATROL"
 };
 
-// Initialize elements and WebSocket on load
-window.addEventListener('DOMContentLoaded', () => {
-    connectWebSocket();
-    let container = document.getElementById('radio-container');
-    if (container) {
-        container.classList.remove('hidden');
-    }
-    updateDisplay();
-    setupMicrophone();
-});
+function getChannelLabel(channel) {
+    if (channel <= 0) return "MUTE";
+    return channelNames[channel] || `CHANNEL ${channel}`;
+}
 
 function updateDisplay() {
     let powerStatus = document.getElementById('power-status');
@@ -69,21 +116,10 @@ function updateDisplay() {
             if (inputContainer) inputContainer.classList.add('hidden');
             if (channelDisplay) {
                 channelDisplay.classList.remove('hidden');
-                channelDisplay.innerText = radioState.channel > 0 ? radioState.channelName : "MUTE";
+                channelDisplay.innerText = radioState.channel > 0 ? getChannelLabel(radioState.channel) : "MUTE";
             }
         }
     }
-}
-
-function cancelTyping() {
-    radioState.isTyping = false;
-    let inputContainer = document.getElementById('inline-input-container');
-    let channelDisplay = document.getElementById('channel-display');
-    let channelInput = document.getElementById('channel-input');
-
-    if (inputContainer) inputContainer.classList.add('hidden');
-    if (channelDisplay) channelDisplay.classList.remove('hidden');
-    if (channelInput) channelInput.value = '';
 }
 
 function submitChannel() {
@@ -100,10 +136,9 @@ function submitChannel() {
 
     cancelTyping();
     radioState.channel = newChannel;
-    radioState.channelName = `Channel ${newChannel}`;
+    radioState.channelName = getChannelLabel(newChannel);
     updateDisplay();
 
-    // Send the channel update to your live server endpoint
     fetch(`${CONFIG.API_URL}/api/radio/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -116,7 +151,53 @@ function submitChannel() {
     });
 }
 
-// Power Knob Click -> Toggle On/Off
+async function setupMicrophone() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        let mediaRecorder = new MediaRecorder(stream);
+
+        mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0 && ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(event.data);
+            }
+        };
+
+        mediaRecorder.start(100);
+        console.log("Microphone initialized for broadcasting.");
+    } catch (err) {
+        console.error("Microphone access denied or unavailable:", err);
+    }
+}
+
+// --- Single Unified DOMContentLoaded Initialization ---
+window.addEventListener('DOMContentLoaded', () => {
+    connectWebSocket();
+    let container = document.getElementById('radio-container');
+    if (container) {
+        container.classList.remove('hidden');
+    }
+    
+    let versionSpan = document.getElementById('app-version');
+    if (versionSpan) {
+        versionSpan.innerText = `v${packageJson.version}`;
+    }
+
+    updateDisplay();
+    setupMicrophone();
+
+    // Set initial button labels in settings modal
+    let pttBtn = document.getElementById('ptt-key-btn');
+    if (pttBtn) pttBtn.innerText = `PTT: ${pttKeyLabel}`;
+    
+    let volUpBtn = document.getElementById('volup-key-btn');
+    if (volUpBtn) volUpBtn.innerText = `Vol Up: ${volUpKey}`;
+
+    let volDownBtn = document.getElementById('voldown-key-btn');
+    if (volDownBtn) volDownBtn.innerText = `Vol Down: ${volDownKey}`;
+});
+
+// --- Event Listeners & UI Controls ---
+
 const powerKnob = document.getElementById('power-knob');
 if (powerKnob) {
     powerKnob.addEventListener('click', function() {
@@ -125,7 +206,6 @@ if (powerKnob) {
     });
 }
 
-// Click Screen -> Activate Direct On-Screen Typing
 const radioScreen = document.getElementById('radio-screen');
 if (radioScreen) {
     radioScreen.addEventListener('click', function(e) {
@@ -149,7 +229,6 @@ if (radioScreen) {
     });
 }
 
-// Keypad Button Clicks
 document.querySelectorAll('.num-btn').forEach(button => {
     button.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -192,69 +271,105 @@ if (channelInput) {
     });
 }
 
-// Initialize microphone stream capture
-async function setupMicrophone() {
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        let mediaRecorder = new MediaRecorder(stream);
+// Settings Modal Controls
+const settingsBtn = document.getElementById('settings-btn');
+const settingsModal = document.getElementById('settings-modal');
 
-        mediaRecorder.ondataavailable = (event) => {
-            if (event.data.size > 0 && ws && ws.readyState === WebSocket.OPEN) {
-                ws.send(event.data);
-            }
-        };
-
-        mediaRecorder.start(100);
-        console.log("Microphone initialized for broadcasting.");
-    } catch (err) {
-        console.error("Microphone access denied or unavailable:", err);
-    }
+if (settingsBtn && settingsModal) {
+    settingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        settingsModal.classList.toggle('hidden');
+    });
 }
 
-// Add PTT state variables
-let pttKey = "ControlLeft"; // Default PTT key
-let isListeningForKey = false;
-let isTransmitting = false;
+const saveSettingsBtn = document.getElementById('save-settings');
+if (saveSettingsBtn && settingsModal) {
+    saveSettingsBtn.addEventListener('click', () => {
+        localStorage.setItem('svrp_ptt_key', pttKey);
+        localStorage.setItem('svrp_ptt_label', pttKeyLabel);
+        localStorage.setItem('svrp_volume', radioState.volume);
+        localStorage.setItem('svrp_volup_key', volUpKey);
+        localStorage.setItem('svrp_voldown_key', volDownKey);
+        
+        settingsModal.classList.add('hidden');
+    });
+}
 
-// Open/Close Settings Modal
-document.getElementById('settings-btn').addEventListener('click', (e) => {
-    e.stopPropagation();
-    let modal = document.getElementById('settings-modal');
-    modal.classList.toggle('hidden');
+// Keybind remapping button clicks
+document.getElementById('ptt-key-btn')?.addEventListener('click', () => {
+    isListeningForPTT = true;
+    isListeningForVolUp = false;
+    isListeningForVolDown = false;
+    document.getElementById('ptt-key-btn').innerText = "Press any key...";
 });
 
-document.getElementById('save-settings').addEventListener('click', () => {
-    document.getElementById('settings-modal').classList.add('hidden');
+document.getElementById('volup-key-btn')?.addEventListener('click', () => {
+    isListeningForVolUp = true;
+    isListeningForPTT = false;
+    isListeningForVolDown = false;
+    document.getElementById('volup-key-btn').innerText = "Press any key...";
 });
 
-// Key capture for PTT configuration
-let pttBtn = document.getElementById('ptt-key-btn');
-pttBtn.addEventListener('click', () => {
-    isListeningForKey = true;
-    pttBtn.innerText = "Press any key...";
+document.getElementById('voldown-key-btn')?.addEventListener('click', () => {
+    isListeningForVolDown = true;
+    isListeningForPTT = false;
+    isListeningForVolUp = false;
+    document.getElementById('voldown-key-btn').innerText = "Press any key...";
 });
 
+// Global Keydown & Keyup Handler
 window.addEventListener('keydown', (e) => {
-    if (isListeningForKey) {
+    if (isListeningForPTT) {
         pttKey = e.code;
-        pttBtn.innerText = `PTT: ${e.key.toUpperCase()} (${e.code})`;
-        isListeningForKey = false;
+        pttKeyLabel = `${e.key.toUpperCase()} (${e.code})`;
+        document.getElementById('ptt-key-btn').innerText = `PTT: ${pttKeyLabel}`;
+        isListeningForPTT = false;
         e.preventDefault();
+        return;
+    }
+
+    if (isListeningForVolUp) {
+        volUpKey = e.code;
+        document.getElementById('volup-key-btn').innerText = `Vol Up: ${volUpKey}`;
+        isListeningForVolUp = false;
+        e.preventDefault();
+        return;
+    }
+
+    if (isListeningForVolDown) {
+        volDownKey = e.code;
+        document.getElementById('voldown-key-btn').innerText = `Vol Down: ${volDownKey}`;
+        isListeningForVolDown = false;
+        e.preventDefault();
+        return;
+    }
+
+    // Volume Up Hotkey
+    if (e.code === volUpKey && radioState.isOn) {
+        radioState.volume = Math.min(100, radioState.volume + 5);
+        updateDisplay();
+        return;
+    }
+
+    // Volume Down Hotkey
+    if (e.code === volDownKey && radioState.isOn) {
+        radioState.volume = Math.max(0, radioState.volume - 5);
+        updateDisplay();
         return;
     }
 
     // PTT Transmit Trigger (Press)
     if (e.code === pttKey && !isTransmitting && radioState.isOn) {
         isTransmitting = true;
+        playSound(pttStartSound);
         console.log("PTT Active: Transmitting audio...");
-        // Unmute mediaRecorder stream or send active signal if needed
     }
 });
 
 window.addEventListener('keyup', (e) => {
-    // PTT Release Trigger
     if (e.code === pttKey && isTransmitting) {
         isTransmitting = false;
+        playSound(pttEndSound);
         console.log("PTT Released: Muted.");
     }
 });
