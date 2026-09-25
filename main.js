@@ -49,9 +49,6 @@ autoUpdater.on('update-downloaded', () => {
     autoUpdater.quitAndInstall();
 });
 
-const { app, BrowserWindow } = require('electron');
-const path = require('path');
-
 function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 240,
