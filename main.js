@@ -67,7 +67,7 @@ ipcMain.on('register-shortcuts', (event, { pttKey, volUpKey, volDownKey }) => {
     // Clear out any old global shortcuts before registering new ones
     globalShortcut.unregisterAll();
 
-    // Register PTT Key (Note: globalShortcut triggers on press down)
+    // Register PTT Key Down
     const pttAccel = getAccelerator(pttKey);
     if (pttAccel) {
         globalShortcut.register(pttAccel, () => {
@@ -76,6 +76,10 @@ ipcMain.on('register-shortcuts', (event, { pttKey, volUpKey, volDownKey }) => {
                 win.webContents.send('global-ptt-down');
             }
         });
+        
+        // Note: Since Electron's globalShortcut doesn't natively listen to key-up events, 
+        // a reliable workaround for desktop PTT in FiveM overlays is toggling or using a timeout, 
+        // or letting window keyup catch it if focus permits.
     }
 
     // Register Volume Up Key
