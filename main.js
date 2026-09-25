@@ -23,6 +23,8 @@ function createWindow() {
 
     // Loads index.html from the 'ui' folder
     mainWindow.loadFile(path.join(__dirname, 'ui/index.html'));
+
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
 }
 
 app.whenReady().then(() => {
