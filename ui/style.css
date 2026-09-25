@@ -1,0 +1,280 @@
+body {
+    user-select: none;
+    margin: 0;
+    padding: 0;
+    background: transparent !important; /* Crucial for Electron transparent window */
+    overflow: hidden;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Main Radio Chassis - 20% Narrower (224px) */
+#radio-container {
+    position: absolute;
+    bottom: 30px;
+    right: 40px;
+    width: 224px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    filter: drop-shadow(0 12px 24px rgba(0,0,0,0.65));
+    cursor: grab;
+}
+
+#radio-container:active {
+    cursor: grabbing;
+}
+
+/* Top Deck - Scaled narrower with extended vertical room */
+.radio-top-deck {
+    width: 195px;
+    height: 150px;
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 6px;
+    box-sizing: border-box;
+}
+
+/* Tactical Antenna - 15% Thicker */
+.antenna {
+    width: 30px;
+    height: 280px;
+    background: #0d0d0d;
+    border-radius: 8px 8px 2px 2px;
+    position: absolute;
+    right: 12px;
+    bottom: 0;
+    box-shadow: 4px 8px 14px rgba(0,0,0,0.85), inset -3px 0 6px rgba(255,255,255,0.12);
+    background-image: repeating-linear-gradient(
+        0deg,
+        #050505,
+        #050505 14px,
+        #1c1c1c 14px,
+        #1c1c1c 18px
+    );
+}
+
+.antenna::before {
+    content: '';
+    position: absolute;
+    top: -7px;
+    left: -1px;
+    width: 32px;
+    height: 13px;
+    background: #151515;
+    border-radius: 50% 50% 30% 30%;
+    border-top: 1px solid #444;
+}
+
+/* Side-Profile Knobs */
+.knob {
+    width: 36px;
+    height: 32px;
+    background: linear-gradient(to right, #1a1a1a, #383838 50%, #1a1a1a);
+    border: 2px solid #080808;
+    border-radius: 4px;
+    position: absolute;
+    bottom: 2px;
+    box-shadow: 0 5px 8px rgba(0,0,0,0.7), inset 0 2px 3px rgba(255,255,255,0.2);
+    background-image: repeating-linear-gradient(
+        90deg,
+        #111 0px,
+        #111 3px,
+        #333 3px,
+        #333 6px
+    );
+    pointer-events: auto;
+}
+
+.knob::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to right, #111, #fff 50%, #111);
+    opacity: 0.85;
+}
+
+.power-knob {
+    left: 6px;
+    cursor: pointer;
+}
+
+.power-knob:active {
+    transform: scale(0.95);
+}
+
+.selector-knob {
+    left: 52px;
+}
+
+/* Radio Body Chassis */
+.radio-body {
+    width: 224px;
+    background: linear-gradient(135deg, #2b2b2b, #181818 40%, #111);
+    border: 2px solid #3a3a3a;
+    border-radius: 14px 14px 12px 12px;
+    padding: 20px 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: inset 0 2px 5px rgba(255,255,255,0.15), inset 0 -5px 15px rgba(0,0,0,0.8);
+    pointer-events: auto;
+}
+
+.brand-label {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #888;
+    margin-bottom: 14px;
+    text-shadow: 0 1px 1px rgba(0,0,0,0.9);
+}
+
+/* LCD Display Screen Frame */
+.radio-screen {
+    width: 100%;
+    height: 185px;
+    background-color: #ffffff;
+    border: 2px solid #0a0a0a;
+    border-radius: 4px;
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    box-sizing: border-box;
+    overflow: hidden;
+    box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+}
+
+.radio-screen:hover {
+    border-color: #006699;
+}
+
+.apx-status-top {
+    background-color: #e2e2e2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 8px;
+    font-size: 9px;
+    border-bottom: 1px solid #ccc;
+    color: #333;
+}
+
+.apx-power-indicator {
+    font-weight: bold;
+}
+
+.apx-main-display {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 8px;
+    background-color: #ffffff;
+}
+
+.apx-zone-text {
+    font-size: 10px;
+    color: #555;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.apx-channel-text {
+    font-size: 22px;
+    font-weight: bold;
+    color: #000;
+    margin-top: 6px;
+}
+
+.apx-bottom-bar {
+    background-color: #006699;
+    color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 8px;
+    font-size: 10px;
+    font-weight: bold;
+}
+
+.inline-input-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.input-prompt {
+    font-size: 15px;
+    font-weight: bold;
+    color: #006699;
+    font-family: Arial, sans-serif;
+}
+
+.inline-channel-input {
+    width: 80px;
+    background: #eef4ee;
+    border: 1px solid #006699;
+    color: #000;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 3px 4px;
+    outline: none;
+    border-radius: 2px;
+}
+
+.radio-keypad-area {
+    width: 100%;
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+}
+
+.num-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+}
+
+.num-btn {
+    background: linear-gradient(to bottom, #2a2a2a, #1c1c1c);
+    border: 1px solid #111;
+    border-radius: 3px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: bold;
+    font-family: Arial, sans-serif;
+    padding: 13px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.08);
+}
+
+.num-btn span {
+    font-size: 7px;
+    color: #888;
+    margin-top: 2px;
+    font-weight: normal;
+}
+
+.num-btn:active {
+    background: #111;
+    transform: translateY(1px);
+    box-shadow: inset 0 2px 3px rgba(0,0,0,0.8);
+}
