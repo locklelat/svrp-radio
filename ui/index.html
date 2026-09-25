@@ -13,7 +13,7 @@
         <!-- Top Deck: Houses Antenna and Knobs at the Top -->
         <div class="radio-top-deck">
             <div class="knob power-knob" id="power-knob"></div>
-            <div class="knob selector-knob"></div>
+            <div class="knob selector-knob" id="selector-knob"></div>
             <div class="antenna"></div>
         </div>
 
@@ -27,7 +27,7 @@
                     <span id="volume-display">Vol: 30%</span>
                 </div>
                 <div class="apx-main-display">
-                    <div class="apx-zone-text">ZONE 1</div>
+                    <div class="apx-zone-text">SASP HOME</div>
                     <div id="channel-display" class="apx-channel-text">---</div>
                     
                     <!-- Hidden input container for direct typing -->
@@ -76,6 +76,12 @@
         
             <label>Volume Down Key:</label>
             <button id="voldown-key-btn" class="ptt-btn">NumpadSubtract</button>
+
+            <label>Channel Up Key:</label>
+            <button id="chanup-key-btn" class="ptt-btn">Control+ArrowUp</button>
+                    
+            <label>Channel Down Key:</label>
+            <button id="chandown-key-btn" class="ptt-btn">Control+ArrowDown</button>
 
             <div class="settings-buttons">
                 <button id="save-settings" class="num-btn" style="width: 100%;">Save & Close</button>

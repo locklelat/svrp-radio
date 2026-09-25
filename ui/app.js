@@ -2,7 +2,10 @@ const path = require('path');
 const CONFIG = require(path.join(__dirname, '../config.js'));
 const packageJson = require('../package.json');
 const { ipcRenderer } = require('electron');
-
+let chanUpKey = localStorage.getItem('svrp_chanup_key') || "Alt+ArrowUp";
+let chanDownKey = localStorage.getItem('svrp_chandown_key') || "Alt+ArrowDown";
+let isListeningForChanUp = false;
+let isListeningForChanDown = false;
 let ws;
 
 // --- PTT & Volume State Variables (Declared First) ---
@@ -196,7 +199,13 @@ window.addEventListener('DOMContentLoaded', () => {
     let volDownBtn = document.getElementById('voldown-key-btn');
     if (volDownBtn) volDownBtn.innerText = `Vol Down: ${volDownKey}`;
 
-    syncGlobalShortcuts(); // Register shortcuts on boot
+    let chanUpBtn = document.getElementById('chanup-key-btn');
+    if (chanUpBtn) chanUpBtn.innerText = `Chan Up: ${chanUpKey}`;
+    
+    let chanDownBtn = document.getElementById('chandown-key-btn');
+    if (chanDownBtn) chanDownBtn.innerText = `Chan Down: ${chanDownKey}`;
+
+    syncGlobalShortcuts();
 });
 
 // --- Event Listeners & UI Controls ---
@@ -206,6 +215,13 @@ if (powerKnob) {
     powerKnob.addEventListener('click', function() {
         radioState.isOn = !radioState.isOn;
         updateDisplay();
+    });
+}
+
+const selectorKnob = document.getElementById('selector-knob');
+if (selectorKnob) {
+    selectorKnob.addEventListener('click', () => {
+        ipcRenderer.send('close-app');
     });
 }
 
@@ -287,14 +303,20 @@ if (settingsBtn && settingsModal) {
 
 const saveSettingsBtn = document.getElementById('save-settings');
 if (saveSettingsBtn && settingsModal) {
-    saveSettingsBtn.addEventListener('click', () => {
+    saveSettingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent click event from bubbling to background screen
+        
         localStorage.setItem('svrp_ptt_key', pttKey);
         localStorage.setItem('svrp_ptt_label', pttKeyLabel);
         localStorage.setItem('svrp_volume', radioState.volume);
         localStorage.setItem('svrp_volup_key', volUpKey);
         localStorage.setItem('svrp_voldown_key', volDownKey);
+        localStorage.setItem('svrp_chanup_key', chanUpKey);
+        localStorage.setItem('svrp_chandown_key', chanDownKey);
         syncGlobalShortcuts();
         settingsModal.classList.add('hidden');
+        cancelTyping();
+        updateDisplay();
     });
 }
 
@@ -320,7 +342,25 @@ document.getElementById('voldown-key-btn')?.addEventListener('click', () => {
     document.getElementById('voldown-key-btn').innerText = "Press any key...";
 });
 
-// Global Keydown & Keyup Handler
+document.getElementById('chanup-key-btn')?.addEventListener('click', () => {
+    isListeningForChanUp = true;
+    isListeningForChanDown = false;
+    isListeningForPTT = false;
+    isListeningForVolUp = false;
+    isListeningForVolDown = false;
+    document.getElementById('chanup-key-btn').innerText = "Press any key (with Alt)...";
+});
+
+document.getElementById('chandown-key-btn')?.addEventListener('click', () => {
+    isListeningForChanDown = true;
+    isListeningForChanUp = false;
+    isListeningForPTT = false;
+    isListeningForVolUp = false;
+    isListeningForVolDown = false;
+    document.getElementById('chandown-key-btn').innerText = "Press any key (with Alt)...";
+});
+
+// Keydown Handler strictly for Settings Remapping
 window.addEventListener('keydown', (e) => {
     if (isListeningForPTT) {
         pttKey = e.code;
@@ -347,41 +387,102 @@ window.addEventListener('keydown', (e) => {
         return;
     }
 
-    // Volume Up Hotkey
-    if (e.code === volUpKey && radioState.isOn) {
-        radioState.volume = Math.min(100, radioState.volume + 5);
-        updateDisplay();
+    if (isListeningForChanUp) {
+        chanUpKey = `Alt+${e.code}`;
+        document.getElementById('chanup-key-btn').innerText = `Chan Up: Alt+${e.key.toUpperCase()}`;
+        isListeningForChanUp = false;
+        e.preventDefault();
         return;
     }
 
-    // Volume Down Hotkey
-    if (e.code === volDownKey && radioState.isOn) {
-        radioState.volume = Math.max(0, radioState.volume - 5);
-        updateDisplay();
+    if (isListeningForChanDown) {
+        chanDownKey = `Alt+${e.code}`;
+        document.getElementById('chandown-key-btn').innerText = `Chan Down: Alt+${e.key.toUpperCase()}`;
+        isListeningForChanDown = false;
+        e.preventDefault();
         return;
     }
-
-    // PTT Transmit Trigger (Press)
-    if (e.code === pttKey && !isTransmitting && radioState.isOn) {
-        isTransmitting = true;
-        playSound(pttStartSound);
-        console.log("PTT Active: Transmitting audio...");
-    }
 });
 
-window.addEventListener('keyup', (e) => {
-    if (e.code === pttKey && isTransmitting) {
-        isTransmitting = false;
-        playSound(pttEndSound);
-        console.log("PTT Released: Muted.");
-    }
-});
-
-// Send keybinds to main.js to register them globally
 function syncGlobalShortcuts() {
     ipcRenderer.send('register-shortcuts', {
         pttKey: pttKey,
         volUpKey: volUpKey,
-        volDownKey: volDownKey
+        volDownKey: volDownKey,
+        chanUpKey: chanUpKey,
+        chanDownKey: chanDownKey
     });
 }
+
+function changeChannelRelative(delta) {
+    if (!radioState.isOn) return;
+    let newChannel = Math.max(1, radioState.channel + delta);
+    
+    cancelTyping();
+    radioState.channel = newChannel;
+    radioState.channelName = getChannelLabel(newChannel);
+    updateDisplay();
+
+    fetch(`${CONFIG.API_URL}/api/radio/update`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            channel: newChannel,
+            identifier: "desktop_user" 
+        })
+    }).then(resp => resp.json()).catch(err => {
+        console.log("Failed to sync channel with server:", err);
+    });
+}
+
+ipcRenderer.on('global-vol-up', () => {
+    if (radioState.isOn) {
+        radioState.volume = Math.min(100, radioState.volume + 5);
+        localStorage.setItem('svrp_volume', radioState.volume); // Save instantly
+        updateDisplay();
+        console.log("Global Volume Up:", radioState.volume);
+    }
+});
+
+ipcRenderer.on('global-vol-down', () => {
+    if (radioState.isOn) {
+        radioState.volume = Math.max(0, radioState.volume - 5);
+        localStorage.setItem('svrp_volume', radioState.volume); // Save instantly
+        updateDisplay();
+        console.log("Global Volume Down:", radioState.volume);
+    }
+});
+
+ipcRenderer.on('global-chan-up', () => {
+    changeChannelRelative(1);
+});
+
+ipcRenderer.on('global-chan-down', () => {
+    changeChannelRelative(-1);
+});
+
+let pttReleaseTimeout = null;
+
+ipcRenderer.on('global-ptt-pulse', () => {
+    if (!radioState.isOn) return;
+
+    // Open mic on initial press
+    if (!isTransmitting) {
+        isTransmitting = true;
+        playSound(pttStartSound);
+        console.log("PTT Active: Transmitting...");
+    }
+
+    // Clear any pending shutdown timer
+    if (pttReleaseTimeout) {
+        clearTimeout(pttReleaseTimeout);
+    }
+
+    pttReleaseTimeout = setTimeout(() => {
+        if (isTransmitting) {
+            isTransmitting = false;
+            playSound(pttEndSound);
+            console.log("PTT Released: Muted.");
+        }
+    }, 525);
+});

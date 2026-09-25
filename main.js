@@ -27,8 +27,6 @@ function createWindow() {
 
 app.whenReady().then(() => {
     createWindow();
-
-    // Check for updates automatically once the app is ready
     autoUpdater.checkForUpdatesAndNotify();
 
     app.on('activate', () => {
@@ -40,7 +38,6 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
 
-// Optional update event listeners for debugging
 autoUpdater.on('update-available', () => {
     log.info('A new update is available. Downloading...');
 });
@@ -50,62 +47,120 @@ autoUpdater.on('update-downloaded', () => {
     autoUpdater.quitAndInstall();
 });
 
-// Helper to convert web event codes to Electron accelerators
 function getAccelerator(code) {
     if (!code) return null;
-    if (code.includes('Control')) return 'Control';
-    if (code.includes('Shift')) return 'Shift';
-    if (code.includes('Alt')) return 'Alt';
+
+    // Handle combinations like Alt+ArrowUp / Alt+ArrowDown or Control+
+    if (code.includes('+')) {
+        let parts = code.split('+');
+        let modifier = parts[0]; // Control or Alt
+        let baseKey = parts[1];
+        
+        if (baseKey === 'ArrowUp' || baseKey === 'Up') baseKey = 'Up';
+        if (baseKey === 'ArrowDown' || baseKey === 'Down') baseKey = 'Down';
+        if (baseKey === 'ArrowLeft' || baseKey === 'Left') baseKey = 'Left';
+        if (baseKey === 'ArrowRight' || baseKey === 'Right') baseKey = 'Right';
+        
+        if (baseKey.startsWith('Key')) baseKey = baseKey.replace('Key', '');
+        if (baseKey.startsWith('Digit')) baseKey = baseKey.replace('Digit', '');
+        
+        return `${modifier}+${baseKey}`;
+    }
+
+    // Standard single-key handling
+    if (code.includes('Control') || code.includes('Shift') || code.includes('Alt')) {
+        return null; 
+    }
     if (code === 'NumpadAdd' || code === 'Add') return 'numadd';
     if (code === 'NumpadSubtract' || code === 'Subtract') return 'numsub';
-    if (code.startsWith('Key')) return code.replace('Key', '');
-    if (code.startsWith('Digit')) return code.replace('Digit', '');
+    if (code.startsWith('Key')) code = code.replace('Key', '');
+    if (code.startsWith('Digit')) code = code.replace('Digit', '');
     return code;
 }
 
-ipcMain.on('register-shortcuts', (event, { pttKey, volUpKey, volDownKey }) => {
-    // Clear out any old global shortcuts before registering new ones
+ipcMain.on('close-app', () => {
+    app.quit();
+});
+
+ipcMain.on('register-shortcuts', (event, { pttKey, volUpKey, volDownKey, chanUpKey, chanDownKey }) => {
     globalShortcut.unregisterAll();
 
-    // Register PTT Key Down
+    // Register PTT Key (Using your previous working pulse setup or click setup)
     const pttAccel = getAccelerator(pttKey);
     if (pttAccel) {
-        globalShortcut.register(pttAccel, () => {
-            const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-            if (win && !win.isDestroyed()) {
-                win.webContents.send('global-ptt-down');
-            }
-        });
-        
-        // Note: Since Electron's globalShortcut doesn't natively listen to key-up events, 
-        // a reliable workaround for desktop PTT in FiveM overlays is toggling or using a timeout, 
-        // or letting window keyup catch it if focus permits.
+        try {
+            globalShortcut.register(pttAccel, () => {
+                const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+                if (win && !win.isDestroyed()) {
+                    win.webContents.send('global-ptt-pulse');
+                }
+            });
+        } catch (err) {
+            console.log(`Could not register global shortcut for PTT:`, err.message);
+        }
     }
 
     // Register Volume Up Key
     const volUpAccel = getAccelerator(volUpKey);
     if (volUpAccel) {
-        globalShortcut.register(volUpAccel, () => {
-            const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-            if (win && !win.isDestroyed()) {
-                win.webContents.send('global-vol-up');
-            }
-        });
+        try {
+            globalShortcut.register(volUpAccel, () => {
+                const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+                if (win && !win.isDestroyed()) {
+                    win.webContents.send('global-vol-up');
+                }
+            });
+        } catch (err) {
+            console.log(`Could not register Vol Up shortcut:`, err.message);
+        }
     }
 
     // Register Volume Down Key
     const volDownAccel = getAccelerator(volDownKey);
     if (volDownAccel) {
-        globalShortcut.register(volDownAccel, () => {
-            const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
-            if (win && !win.isDestroyed()) {
-                win.webContents.send('global-vol-down');
-            }
-        });
+        try {
+            globalShortcut.register(volDownAccel, () => {
+                const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+                if (win && !win.isDestroyed()) {
+                    win.webContents.send('global-vol-down');
+                }
+            });
+        } catch (err) {
+            console.log(`Could not register Vol Down shortcut:`, err.message);
+        }
+    }
+
+    // Register Channel Up Key
+    const chanUpAccel = getAccelerator(chanUpKey);
+    if (chanUpAccel) {
+        try {
+            globalShortcut.register(chanUpAccel, () => {
+                const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+                if (win && !win.isDestroyed()) {
+                    win.webContents.send('global-chan-up');
+                }
+            });
+        } catch (err) {
+            console.log(`Could not register Channel Up shortcut:`, err.message);
+        }
+    }
+
+    // Register Channel Down Key
+    const chanDownAccel = getAccelerator(chanDownKey);
+    if (chanDownAccel) {
+        try {
+            globalShortcut.register(chanDownAccel, () => {
+                const win = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+                if (win && !win.isDestroyed()) {
+                    win.webContents.send('global-chan-down');
+                }
+            });
+        } catch (err) {
+            console.log(`Could not register Channel Down shortcut:`, err.message);
+        }
     }
 });
 
-// Clean up shortcuts when app closes
 app.on('will-quit', () => {
     globalShortcut.unregisterAll();
 });
