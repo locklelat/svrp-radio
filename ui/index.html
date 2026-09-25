@@ -30,6 +30,20 @@
                 <div class="apx-bottom-bar">
                     <span id="screen-hint"></span>
                     <span>APX-8000</span>
+                    <!-- Settings Gear Icon -->
+                    <span id="settings-btn" style="cursor: pointer; margin-left: auto; padding-left: 6px;">⚙️</span>
+                </div>
+
+                <!-- Settings Modal Overlay -->
+                <div id="settings-modal" class="settings-modal hidden">
+                    <div class="settings-content">
+                        <h3>Radio Settings</h3>
+                        <label>Push-To-Talk (PTT) Key:</label>
+                        <button id="ptt-key-btn" class="ptt-btn">Press any key...</button>
+                        <div class="settings-buttons">
+                            <button id="save-settings" class="num-btn" style="width: 100%;">Save & Close</button>
+                        </div>
+                    </div>
                 </div>
             </div>
 

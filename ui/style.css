@@ -278,3 +278,49 @@ button, input, .radio-screen {
     transform: translateY(1px);
     box-shadow: inset 0 2px 3px rgba(0,0,0,0.8);
 }
+
+#settings-btn:hover {
+    color: #ffcc00;
+}
+
+.settings-modal {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    border-radius: 4px;
+}
+
+.settings-content {
+    background: #1a1a1a;
+    border: 1px solid #006699;
+    padding: 15px;
+    border-radius: 6px;
+    width: 80%;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    text-align: center;
+}
+
+.ptt-btn {
+    width: 100%;
+    padding: 8px;
+    background: #2a2a2a;
+    border: 1px solid #555;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 10px 0;
+    border-radius: 3px;
+}
+
+.ptt-btn:hover {
+    border-color: #006699;
+}

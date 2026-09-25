@@ -210,3 +210,51 @@ async function setupMicrophone() {
         console.error("Microphone access denied or unavailable:", err);
     }
 }
+
+// Add PTT state variables
+let pttKey = "ControlLeft"; // Default PTT key
+let isListeningForKey = false;
+let isTransmitting = false;
+
+// Open/Close Settings Modal
+document.getElementById('settings-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    let modal = document.getElementById('settings-modal');
+    modal.classList.toggle('hidden');
+});
+
+document.getElementById('save-settings').addEventListener('click', () => {
+    document.getElementById('settings-modal').classList.add('hidden');
+});
+
+// Key capture for PTT configuration
+let pttBtn = document.getElementById('ptt-key-btn');
+pttBtn.addEventListener('click', () => {
+    isListeningForKey = true;
+    pttBtn.innerText = "Press any key...";
+});
+
+window.addEventListener('keydown', (e) => {
+    if (isListeningForKey) {
+        pttKey = e.code;
+        pttBtn.innerText = `PTT: ${e.key.toUpperCase()} (${e.code})`;
+        isListeningForKey = false;
+        e.preventDefault();
+        return;
+    }
+
+    // PTT Transmit Trigger (Press)
+    if (e.code === pttKey && !isTransmitting && radioState.isOn) {
+        isTransmitting = true;
+        console.log("PTT Active: Transmitting audio...");
+        // Unmute mediaRecorder stream or send active signal if needed
+    }
+});
+
+window.addEventListener('keyup', (e) => {
+    // PTT Release Trigger
+    if (e.code === pttKey && isTransmitting) {
+        isTransmitting = false;
+        console.log("PTT Released: Muted.");
+    }
+});
