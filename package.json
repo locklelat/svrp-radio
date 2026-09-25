@@ -17,6 +17,7 @@
   "build": {
     "appId": "com.svrp.radio",
     "productName": "SweetVictoryRadio",
+    "artifactName": "${productName}-Setup.${ext}",
     "directories": {
       "output": "dist"
     },
