@@ -7,9 +7,55 @@
 </head>
 <body>
 
-    <!-- Main Radio Container -->
-    <div id="radio-container" class="hidden">
-        <!-- (Keep all your existing radio HTML elements here) -->
+    <!-- Main Radio Container (Visible immediately on load) -->
+    <div id="radio-container">
+        <div class="radio-body">
+            <div class="brand-label">SVRP RADIO</div>
+            
+            <div class="radio-screen" id="radio-screen">
+                <div class="apx-status-top">
+                    <span id="power-status" class="apx-power-indicator">OFF</span>
+                    <span id="volume-display">Vol: 30%</span>
+                </div>
+                <div class="apx-main-display">
+                    <div class="apx-zone-text">ZONE 1</div>
+                    <div id="channel-display" class="apx-channel-text">---</div>
+                    
+                    <!-- Hidden input container for direct typing -->
+                    <div id="inline-input-container" class="inline-input-container hidden">
+                        <span class="input-prompt">CH:</span>
+                        <input type="text" id="channel-input" class="inline-channel-input" maxlength="4">
+                    </div>
+                </div>
+                <div class="apx-bottom-bar">
+                    <span id="screen-hint"></span>
+                    <span>APX-8000</span>
+                </div>
+            </div>
+
+            <!-- Keypad Area -->
+            <div class="radio-keypad-area">
+                <div class="num-grid">
+                    <button class="num-btn" data-value="1">1</button>
+                    <button class="num-btn" data-value="2">2</button>
+                    <button class="num-btn" data-value="3">3</button>
+                    <button class="num-btn" data-value="4">4</button>
+                    <button class="num-btn" data-value="5">5</button>
+                    <button class="num-btn" data-value="6">6</button>
+                    <button class="num-btn" data-value="7">7</button>
+                    <button class="num-btn" data-value="8">8</button>
+                    <button class="num-btn" data-value="9">9</button>
+                    <button class="num-btn" data-value="DEL">DEL<span>CLR</span></button>
+                    <button class="num-btn" data-value="0">0</button>
+                    <button class="num-btn" data-value="OK">OK<span>ENT</span></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Power knob element referenced in JS -->
+        <div class="knob power-knob" id="power-knob"></div>
+        <div class="knob selector-knob"></div>
+        <div class="antenna"></div>
     </div>
 
     <script src="app.js"></script>
