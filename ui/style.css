@@ -2,7 +2,7 @@ body {
     user-select: none;
     margin: 0;
     padding: 0;
-    background: transparent !important; /* Crucial for Electron transparent window */
+    background: transparent !important;
     overflow: hidden;
 }
 
@@ -10,8 +10,9 @@ body {
     display: none !important;
 }
 
+/* Main Radio Container */
 #radio-container {
-    position: relative; /* Change from absolute to relative */
+    position: relative;
     width: 224px;
     display: flex;
     flex-direction: column;
@@ -20,34 +21,33 @@ body {
     -webkit-app-region: drag; 
 }
 
-button, input, .radio-screen {
+/* Exclude interactive elements from window dragging */
+button, input, .radio-screen, .knob, .settings-content {
     -webkit-app-region: no-drag;
 }
 
-#radio-container:active {
-    cursor: grabbing;
-}
-
+/* Top Deck - Positions the antenna and knobs neatly above the body */
 .radio-top-deck {
     width: 195px;
-    height: 150px;
+    height: 45px;
     position: relative;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
     padding: 0 6px;
     box-sizing: border-box;
+    z-index: 2;
 }
 
 /* Tactical Antenna */
 .antenna {
-    width: 30px;
-    height: 280px;
+    width: 26px;
+    height: 120px;
     background: #0d0d0d;
-    border-radius: 8px 8px 2px 2px;
+    border-radius: 6px 6px 2px 2px;
     position: absolute;
-    right: 12px;
-    bottom: 0;
+    right: 14px;
+    top: -75px;
     box-shadow: 4px 8px 14px rgba(0,0,0,0.85), inset -3px 0 6px rgba(255,255,255,0.12);
     background-image: repeating-linear-gradient(
         0deg,
@@ -61,10 +61,10 @@ button, input, .radio-screen {
 .antenna::before {
     content: '';
     position: absolute;
-    top: -7px;
+    top: -6px;
     left: -1px;
-    width: 32px;
-    height: 13px;
+    width: 28px;
+    height: 11px;
     background: #151515;
     border-radius: 50% 50% 30% 30%;
     border-top: 1px solid #444;
@@ -72,13 +72,13 @@ button, input, .radio-screen {
 
 /* Side-Profile Knobs */
 .knob {
-    width: 36px;
-    height: 32px;
+    width: 32px;
+    height: 28px;
     background: linear-gradient(to right, #1a1a1a, #383838 50%, #1a1a1a);
     border: 2px solid #080808;
     border-radius: 4px;
     position: absolute;
-    bottom: 2px;
+    top: 10px;
     box-shadow: 0 5px 8px rgba(0,0,0,0.7), inset 0 2px 3px rgba(255,255,255,0.2);
     background-image: repeating-linear-gradient(
         90deg,
@@ -87,7 +87,7 @@ button, input, .radio-screen {
         #333 3px,
         #333 6px
     );
-    pointer-events: auto;
+    cursor: pointer;
 }
 
 .knob::before {
@@ -103,8 +103,7 @@ button, input, .radio-screen {
 }
 
 .power-knob {
-    left: 6px;
-    cursor: pointer;
+    left: 12px;
 }
 
 .power-knob:active {
@@ -112,7 +111,7 @@ button, input, .radio-screen {
 }
 
 .selector-knob {
-    left: 52px;
+    left: 56px;
 }
 
 /* Radio Body Chassis */
@@ -127,7 +126,7 @@ button, input, .radio-screen {
     flex-direction: column;
     align-items: center;
     box-shadow: inset 0 2px 5px rgba(255,255,255,0.15), inset 0 -5px 15px rgba(0,0,0,0.8);
-    pointer-events: auto;
+    z-index: 1;
 }
 
 .brand-label {
@@ -279,22 +278,18 @@ button, input, .radio-screen {
     box-shadow: inset 0 2px 3px rgba(0,0,0,0.8);
 }
 
-#settings-btn:hover {
-    color: #ffcc00;
-}
-
+/* Settings Modal Styling */
 .settings-modal {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
     background: rgba(0, 0, 0, 0.85);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 100;
-    border-radius: 4px;
+    z-index: 1000;
 }
 
 .settings-content {
@@ -302,7 +297,7 @@ button, input, .radio-screen {
     border: 1px solid #006699;
     padding: 15px;
     border-radius: 6px;
-    width: 80%;
+    width: 200px;
     color: #fff;
     font-family: Arial, sans-serif;
     font-size: 11px;

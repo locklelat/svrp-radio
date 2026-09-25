@@ -7,8 +7,17 @@
 </head>
 <body>
 
-    <!-- Main Radio Container (Visible immediately on load) -->
+    <!-- Main Radio Container -->
     <div id="radio-container">
+        
+        <!-- Top Deck: Houses Antenna and Knobs at the Top -->
+        <div class="radio-top-deck">
+            <div class="knob power-knob" id="power-knob"></div>
+            <div class="knob selector-knob"></div>
+            <div class="antenna"></div>
+        </div>
+
+        <!-- Radio Body Chassis -->
         <div class="radio-body">
             <div class="brand-label">SVRP RADIO</div>
             
@@ -33,18 +42,6 @@
                     <!-- Settings Gear Icon -->
                     <span id="settings-btn" style="cursor: pointer; margin-left: auto; padding-left: 6px;">⚙️</span>
                 </div>
-
-                <!-- Settings Modal Overlay -->
-                <div id="settings-modal" class="settings-modal hidden">
-                    <div class="settings-content">
-                        <h3>Radio Settings</h3>
-                        <label>Push-To-Talk (PTT) Key:</label>
-                        <button id="ptt-key-btn" class="ptt-btn">Press any key...</button>
-                        <div class="settings-buttons">
-                            <button id="save-settings" class="num-btn" style="width: 100%;">Save & Close</button>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Keypad Area -->
@@ -65,11 +62,18 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Power knob element referenced in JS -->
-        <div class="knob power-knob" id="power-knob"></div>
-        <div class="knob selector-knob"></div>
-        <div class="antenna"></div>
+    <!-- Settings Modal Overlay -->
+    <div id="settings-modal" class="settings-modal hidden">
+        <div class="settings-content">
+            <h3>Radio Settings</h3>
+            <label>Push-To-Talk (PTT) Key:</label>
+            <button id="ptt-key-btn" class="ptt-btn">Press any key...</button>
+            <div class="settings-buttons">
+                <button id="save-settings" class="num-btn" style="width: 100%;">Save & Close</button>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>
