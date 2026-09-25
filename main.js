@@ -1,8 +1,7 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const log = require('electron-log');
 const path = require('path');
-const { app, BrowserWindow, globalShortcut, ipcMain } = require('electron');
 
 // Configure logging for updates
 autoUpdater.logger = log;
