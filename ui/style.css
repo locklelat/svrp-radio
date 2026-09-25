@@ -1,21 +1,23 @@
+.hidden {
+    display: none !important;
+}
+
 body {
     user-select: none;
     margin: 0;
-    padding-top: 80px; /* Pushes everything down so the antenna fits fully */
+    padding: 0;
     display: flex;
     justify-content: center;
+    align-items: flex-end; /* Align to the bottom so extra space goes to the top */
     background: transparent !important;
     overflow: hidden;
-}
-
-.hidden {
-    display: none !important;
 }
 
 /* Main Radio Container */
 #radio-container {
     position: relative;
     width: 224px;
+    margin-top: 80px; /* Moves the container down so the antenna fits inside the window without padding the body background */
     display: flex;
     flex-direction: column;
     align-items: center;

@@ -11,7 +11,7 @@ log.info('App starting...');
 function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 260,
-        height: 620,
+        height: 650,
         frame: false,
         transparent: true,
         backgroundColor: '#00000000',
