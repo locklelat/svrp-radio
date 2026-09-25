@@ -11,11 +11,10 @@ log.info('App starting...');
 function createWindow() {
     const mainWindow = new BrowserWindow({
         width: 260,
-        height: 520,
+        height: 620, // Increased to fit the full antenna
         frame: false,
         transparent: true,
         resizable: false,
-        alwaysOnTop: true,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false

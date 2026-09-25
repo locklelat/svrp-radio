@@ -1,7 +1,9 @@
 body {
     user-select: none;
     margin: 0;
-    padding: 0;
+    padding-top: 80px; /* Pushes everything down so the antenna fits fully */
+    display: flex;
+    justify-content: center;
     background: transparent !important;
     overflow: hidden;
 }
