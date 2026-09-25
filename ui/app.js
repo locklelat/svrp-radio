@@ -84,7 +84,7 @@ const channelNames = {
 };
 
 function getChannelLabel(channel) {
-    if (channel <= 0) return "MUTE";
+    if (channel <= 0) return "0";
     return channelNames[channel] || `CHANNEL ${channel}`;
 }
 
@@ -116,7 +116,7 @@ function updateDisplay() {
             if (inputContainer) inputContainer.classList.add('hidden');
             if (channelDisplay) {
                 channelDisplay.classList.remove('hidden');
-                channelDisplay.innerText = radioState.channel > 0 ? getChannelLabel(radioState.channel) : "MUTE";
+                channelDisplay.innerText = radioState.channel > 0 ? getChannelLabel(radioState.channel) : "0";
             }
         }
     }
